@@ -3,24 +3,23 @@
 ##############################################
 
 terraform {
-  required_version = ">= 1.3.0"
-
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
   }
-
-  # If you plan to store the state in Azure, you can uncomment and fill these in,
-  # after creating the storage account once.
-  # backend "azurerm" {
-  #   resource_group_name  = var.state_rg_name
-  #   storage_account_name = var.state_sa_name
-  #   container_name       = var.state_container_name
-  #   key                  = "infrastructure.tfstate"
-  # }
 }
+
+# If you plan to store the state in Azure, you can uncomment and fill these in,
+# after creating the storage account once.
+# backend "azurerm" {
+#   resource_group_name  = var.state_rg_name
+#   storage_account_name = var.state_sa_name
+#   container_name       = var.state_container_name
+#   key                  = "infrastructure.tfstate"
+# }
+
 
 provider "azurerm" {
   features {}

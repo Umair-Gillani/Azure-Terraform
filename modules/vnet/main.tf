@@ -1,43 +1,22 @@
 ############################################
 # 1) Calculate Subnet CIDRs Dynamically
 ############################################
-# The 'cidrsubnet' function adds extra bits to a base CIDR.
-# 
-# If your base VNet CIDR is /16, adding 8 bits creates a /24.
-# The third argument (netnum) chooses the incremental subnet 
-# (0 -> first /24, 1 -> second /24, etc.). We pick them to 
-# match your requested pattern:
-#   Public = 10.17.2.0/24  (netnum = 2)
-#   AKS    = 10.17.1.0/24  (netnum = 1)
-#   DB     = 10.17.3.0/24  (netnum = 3)
-#
-# For production vs. staging, just change var.vnet_cidr
-# to 10.18.0.0/16 (etc.).
-
 locals {
-  # Derive /24 subnets from the base /16
-  # If you want /24 subnets from a /16, that's 8 new bits 
-  # (the second argument to cidrsubnet).
   public_subnet_cidr  = cidrsubnet(var.vnet_cidr, 8, 2)
   cluster_subnet_cidr = cidrsubnet(var.vnet_cidr, 8, 1)
   db_subnet_cidr      = cidrsubnet(var.vnet_cidr, 8, 3)
 }
 
-############################################
-# 2) Create the VNet
-############################################
 resource "azurerm_virtual_network" "this" {
   name                = var.vnet_name
   resource_group_name = var.resource_group_name
   location            = var.location
-
-  # The VNet address space is just the single base CIDR
   address_space       = [var.vnet_cidr]
   tags                = var.tags
 }
 
 ############################################
-# 3) Create Subnets
+# 2) Create Subnets
 ############################################
 resource "azurerm_subnet" "public" {
   name                 = var.public_subnet_name
@@ -51,6 +30,9 @@ resource "azurerm_subnet" "aks" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [local.cluster_subnet_cidr]
+  
+  # New: service endpoints for azure
+  service_endpoints = ["Microsoft.Storage", "Microsoft.Sql"]
 }
 
 resource "azurerm_subnet" "db" {
@@ -58,10 +40,48 @@ resource "azurerm_subnet" "db" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = [local.db_subnet_cidr]
+
+  # New: service endpoints for azure
+  service_endpoints = ["Microsoft.Storage", "Microsoft.Sql"]
 }
 
 ############################################
-# 4) (Optional) Create an NSG for AKS and a Rule
+# 3) NAT Gateway for Private Subnets
+############################################
+resource "azurerm_public_ip" "nat_gw_pip" {
+  name                = "${var.vnet_name}-nat-pip"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  tags                = var.tags
+}
+
+resource "azurerm_nat_gateway" "nat_gw" {
+  name                = "${var.vnet_name}-nat-gateway"
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  sku_name            = "Standard"
+  tags                = var.tags
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "nat_assoc" {
+  nat_gateway_id       = azurerm_nat_gateway.nat_gw.id
+  public_ip_address_id = azurerm_public_ip.nat_gw_pip.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "db_nat_assoc" {
+  subnet_id      = azurerm_subnet.db.id
+  nat_gateway_id = azurerm_nat_gateway.nat_gw.id
+}
+
+resource "azurerm_subnet_nat_gateway_association" "aks_nat_assoc" {
+  subnet_id      = azurerm_subnet.aks.id
+  nat_gateway_id = azurerm_nat_gateway.nat_gw.id
+}
+
+############################################
+# 4) (Optional) Create an NSG for Private Subnets
 ############################################
 resource "azurerm_network_security_group" "aks_nsg" {
   name                = "${var.aks_subnet_name}-nsg"
@@ -70,7 +90,21 @@ resource "azurerm_network_security_group" "aks_nsg" {
   tags                = var.tags
 }
 
-# Example rule: allow inbound from the Public subnet (Bastion) to the AKS subnet
+# NEW: allow private subnets to talk to each other
+resource "azurerm_network_security_rule" "allow_private_intra" {
+  name                        = "Allow-Private-Subnets"
+  priority                    = 150
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = var.vnet_cidr
+  destination_address_prefix  = var.vnet_cidr
+  resource_group_name         = var.resource_group_name
+  network_security_group_name = azurerm_network_security_group.aks_nsg.name
+}
+
 resource "azurerm_network_security_rule" "allow_bastion_to_aks" {
   name                        = "AllowBastionToAKS"
   priority                    = 100
@@ -80,18 +114,21 @@ resource "azurerm_network_security_rule" "allow_bastion_to_aks" {
   source_port_range           = "*"
   destination_port_range      = "*"
 
-  # Source is the Public Subnet range
   source_address_prefix       = local.public_subnet_cidr
-  # Destination is the AKS Subnet range
   destination_address_prefix  = local.cluster_subnet_cidr
 
   resource_group_name         = var.resource_group_name
   network_security_group_name = azurerm_network_security_group.aks_nsg.name
 }
 
-# Attach the NSG to the AKS Subnet
+# Attach NSG to the private subnets
 resource "azurerm_subnet_network_security_group_association" "aks_subnet_assoc" {
   subnet_id                 = azurerm_subnet.aks.id
+  network_security_group_id = azurerm_network_security_group.aks_nsg.id
+}
+
+resource "azurerm_subnet_network_security_group_association" "db_subnet_assoc" {
+  subnet_id                 = azurerm_subnet.db.id
   network_security_group_id = azurerm_network_security_group.aks_nsg.id
 }
 
