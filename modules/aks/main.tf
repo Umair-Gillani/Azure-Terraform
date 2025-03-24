@@ -26,6 +26,8 @@ resource "azurerm_kubernetes_cluster" "this" {
     load_balancer_sku  = "standard"  # changing it to "standard" can =>  allow authorized IP ranges and better security.
     service_cidr       = "10.2.0.0/16"
     dns_service_ip     = "10.2.0.10"
+    outbound_type = "loadBalancer"  # k8s created LB is used for outbound traffic of backend nodepool  
+
     # docker_bridge_cidr = "172.17.0.1/16"   # `docker_bridge_cidr` has been deprecated 
     # We do not create an external LB. This is an internal cluster usage only.
   }
