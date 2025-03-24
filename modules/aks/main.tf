@@ -23,7 +23,7 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   network_profile {
     network_plugin     = "azure"  # Azure CNI (Advanced networking) is being used. FOR BASIC => network_plugin = "kubenet"
-    load_balancer_sku  = "basic"  # changing it to "standard" can =>  allow authorized IP ranges and better security.
+    load_balancer_sku  = "standard"  # changing it to "standard" can =>  allow authorized IP ranges and better security.
     service_cidr       = "10.2.0.0/16"
     dns_service_ip     = "10.2.0.10"
     # docker_bridge_cidr = "172.17.0.1/16"   # `docker_bridge_cidr` has been deprecated 
