@@ -107,7 +107,6 @@ resource "azurerm_subnet" "db" {
 # 8080	Custom App/Debug	✅ Optional using template
 # Any	Others	❌ Denied by default (if deny rule added)
 
-
 #########################################################
 #  Create an NSG for Public Subnet (10.17.2.0/24) Subnets
 #########################################################
@@ -179,7 +178,6 @@ resource "azurerm_network_security_rule" "deny_all_other" {
   network_security_group_name = azurerm_network_security_group.public_nsg.name
 }
 
-
 # 🧩 TEMPLATE: Use this format to allow future custom ports like 8080 or 3389
 # ✨ Just copy this block, change '8080' to any port, and update the name + priority
 # Example: for RDP access → use 3389
@@ -198,26 +196,11 @@ resource "azurerm_network_security_rule" "deny_all_other" {
 #   network_security_group_name = azurerm_network_security_group.public_nsg.name
 # }
 
-
-
 # 🔗 Associate NSG with Public Subnet
 resource "azurerm_subnet_network_security_group_association" "public_assoc" {
   subnet_id                 = azurerm_subnet.public.id
   network_security_group_id = azurerm_network_security_group.public_nsg.id
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #########################################################
 #  Create an NSG for AKS Subnet (10.17.1.0/24) Subnets
@@ -229,10 +212,10 @@ resource "azurerm_network_security_group" "aks_nsg" {
   tags                = var.tags
 }
 
-# Bastion → AKS (API server)
-resource "azurerm_network_security_rule" "bastion_to_aks" {
-  name                        = "BastionToK8sAPI"
-  priority                    = 100
+# Bastion/Public Subnet → AKS (API server)
+resource "azurerm_network_security_rule" "public_to_aks_api" {
+  name                        = "AllowPublicToAKSAPI"
+  priority                    = 105
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "Tcp"
@@ -259,20 +242,25 @@ resource "azurerm_network_security_rule" "db_to_aks" {
   network_security_group_name = azurerm_network_security_group.aks_nsg.name
 }
 
+# Deny everything else to AKS
+resource "azurerm_network_security_rule" "deny_other_to_aks" {
+  name                        = "DenyOtherToAKS"
+  priority                    = 4000
+  direction                   = "Inbound"
+  access                      = "Deny"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = local.cluster_subnet_cidr
+  resource_group_name         = var.resource_group_name
+  network_security_group_name = azurerm_network_security_group.aks_nsg.name
+}
+
 resource "azurerm_subnet_network_security_group_association" "aks_assoc" {
   subnet_id                 = azurerm_subnet.aks.id
   network_security_group_id = azurerm_network_security_group.aks_nsg.id
 }
-
-
-
-
-
-
-
-
-
-
 
 #########################################################
 #  Create an NSG for DB Subnet (10.17.3.0/24) Subnets
@@ -294,6 +282,36 @@ resource "azurerm_network_security_rule" "aks_to_db" {
   source_port_range           = "*"
   destination_port_range      = "*"
   source_address_prefix       = local.cluster_subnet_cidr
+  destination_address_prefix  = local.db_subnet_cidr
+  resource_group_name         = var.resource_group_name
+  network_security_group_name = azurerm_network_security_group.db_nsg.name
+}
+
+# Public Subnet → DB (MySQL Port)
+resource "azurerm_network_security_rule" "public_to_db_mysql" {
+  name                        = "AllowPublicToMySQL"
+  priority                    = 105
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "3306"
+  source_address_prefix       = local.public_subnet_cidr
+  destination_address_prefix  = local.db_subnet_cidr
+  resource_group_name         = var.resource_group_name
+  network_security_group_name = azurerm_network_security_group.db_nsg.name
+}
+
+# Deny everything else to DB
+resource "azurerm_network_security_rule" "deny_other_to_db" {
+  name                        = "DenyOtherToDB"
+  priority                    = 4000
+  direction                   = "Inbound"
+  access                      = "Deny"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
   destination_address_prefix  = local.db_subnet_cidr
   resource_group_name         = var.resource_group_name
   network_security_group_name = azurerm_network_security_group.db_nsg.name
