@@ -66,6 +66,25 @@ resource "azurerm_linux_virtual_machine" "this" {
     public_key = var.ssh_key
   }
 
+  custom_data = base64encode(<<EOF
+#!/bin/bash
+# Install Azure CLI
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+# Install kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+# Check version
+kubectl version --client
+
+# Bash completion
+sudo apt install -y bash-completion
+echo 'source <(kubectl completion bash)' >> ~/.bashrc
+source ~/.bashrc
+EOF
+  )
   tags = var.tags
 }
 
