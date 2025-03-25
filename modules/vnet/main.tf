@@ -202,6 +202,10 @@ resource "azurerm_subnet_network_security_group_association" "public_assoc" {
   network_security_group_id = azurerm_network_security_group.public_nsg.id
 }
 
+
+
+
+
 #########################################################
 #  Create an NSG for AKS Subnet (10.17.1.0/24) Subnets
 #########################################################
@@ -261,6 +265,10 @@ resource "azurerm_subnet_network_security_group_association" "aks_assoc" {
   subnet_id                 = azurerm_subnet.aks.id
   network_security_group_id = azurerm_network_security_group.aks_nsg.id
 }
+
+
+
+
 
 #########################################################
 #  Create an NSG for DB Subnet (10.17.3.0/24) Subnets
