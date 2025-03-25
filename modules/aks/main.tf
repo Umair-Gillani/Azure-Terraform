@@ -17,7 +17,8 @@ resource "azurerm_kubernetes_cluster" "this" {
     enable_auto_scaling = true
     min_count           = var.min_count
     max_count           = var.max_count
-    orchestrator_version= "auto"
+    # orchestrator_version= "auto"       #  specify k8s version for production environment or 
+                                         #  azure will automatically pick the latest version
   }
 
 
