@@ -13,7 +13,7 @@
 # General Settings
 # -------------------------------------------------------------------
 location = "Central US"
-rg_name  = "cw-centralus-rg"
+rg_name  = "cw-centralus-rg-1"
 
 default_tags = {
   environment = "dev"
