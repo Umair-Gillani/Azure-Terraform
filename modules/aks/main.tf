@@ -18,13 +18,8 @@ resource "azurerm_kubernetes_cluster" "this" {
     min_count           = var.min_count
     max_count           = var.max_count
     
-    orchestrator_version= "auto"       #  specify k8s version for production environment or azure will automatically pick the latest version
-####  Specify a Kubernetes version:
-####  ⏳ Why? Sometimes latest version rollout isn’t fully stable in all regions (like centralus), causing unexpected polling issues.
-####  if didn't mention it will through below error
-##  Error: polling after CreateOrUpdate: internal-error: unimplemented polling status "Unknown"
-##  is typically a temporary Azure-side API response glitch, not a problem in your code.    
-####  Import the cluster manually commmand
+    # orchestrator_version= "auto"       #  specify k8s version for production environment or azure will automatically pick the latest version
+
 ####  terraform import azurerm_kubernetes_cluster.this /subscriptions/<sub_id>/resourceGroups/<rg>/providers/Microsoft.ContainerService/managedClusters/<cluster_name>
 
 
