@@ -13,7 +13,7 @@
 # General Settings
 # -------------------------------------------------------------------
 location = "Central US"
-rg_name  = "cw-centralus-rg-1"
+rg_name  = "cw-centralus-rg"
 
 default_tags = {
   environment = "dev"
@@ -60,7 +60,7 @@ bastion_ssh_key        = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCjmLK0jNU/3ryRRf
 # -------------------------------------------------------------------
 # Azure Container Registry
 # -------------------------------------------------------------------
-acr_name = "cwcentralusacr1"
+acr_name = "cwcentralusacr"
 
 
 
