@@ -10,6 +10,7 @@
 # Ignore plan output files
 terraform.tfplan
 *.tfplan
+*.tfstate
 
 # Ignore sensitive credentials (AWS, GCP, Azure, etc.)
 .terraformrc
