@@ -94,37 +94,3 @@ max_count          = 2
 # vm_size            = "Standard_D2s_v3"  # 2 vCPUs, 8GB RAM (valid for system node pool)
 # vm_size = "Standard_DS2_v2" # Lower cost but still valid
 vm_size = "Standard_B2ms" # 2 vCPUs, 8GB RAM
-
-# -------------------------------------------------------------------
-# Database Settings
-# -------------------------------------------------------------------
-# vm_size = "Standard_B2ms" # 2 vCPUs, 8GB RAM
-
-# -------------------------------------------------------------------
-# Database Settings
-# -------------------------------------------------------------------
-# db_name             = "cw-centralus-db"
-# db_admin_username   = "dbadmin"
-# db_admin_password   = "SomeStrongP@ssw0rd"
-# db_sku_name         = "Standard_B1ms"
-# db_version          = "5.7"
-# db_storage_mb       = 5120
-# publicly_accessible = false
-
-
-# backup_retention_days        = 7
-# geo_redundant_backup_enabled = false
-
-
-
-# -------------------------------------------------------------------
-# AKS Cluster
-# -------------------------------------------------------------------
-# aks_cluster_name   = "cw-centralus-aks_cluster"
-# dns_prefix         = "cwcentralus"
-# default_node_count = 1
-# min_count          = 1
-# max_count          = 2
-# # vm_size            = "Standard_D2s_v3"  # 2 vCPUs, 8GB RAM (valid for system node pool)
-# # vm_size = "Standard_DS2_v2" # Lower cost but still valid
-# vm_size = "Standard_B2ms" # 2 vCPUs, 8GB RAM
