@@ -18,6 +18,11 @@ output "bastion_public_ip" {
   value       = module.bastion_host.public_ip
 }
 
+# output "bastion_admin_username" {
+#   description = "Bastion Host Username"
+#   value       = module.bastion_host.bastion_name
+# }
+
 # output "db_server_name" {
 #   description = "Database Server Name"
 #   value       = module.database.db_server_name
