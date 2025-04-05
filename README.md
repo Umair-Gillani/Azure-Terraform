@@ -30,7 +30,6 @@
 └── .gitignore             # Git ignore file
 ```
 
-Below is a **`README.md`** style summary you can use on GitHub, plus a **LinkedIn caption** at the end. It’s written in an easy, beginner-friendly style, yet covers the essential security measures and project details discussed in this chat.
 
 ---
 
@@ -98,8 +97,8 @@ This Terraform project sets up a **secure, highly available, and scalable** infr
 
 1. **Clone This Repo**  
    ```bash
-   git clone https://github.com/YourUser/azure-terraform-infra.git
-   cd azure-terraform-infra
+   git clone https://github.com/Umair-Gillani/Azure-Terraform.git
+   cd Azure-Terraform
    ```
 2. **Configure `.tfvars`**  
    - Set `location = "Central US"`, `vnet_cidr = "10.17.0.0/16"`, or anything else that suits your environment.
@@ -132,15 +131,3 @@ This Terraform project sets up a **secure, highly available, and scalable** infr
 - **Scalable**: AKS auto-scaling node pool plus a container registry for easy image pulls.
 
 ---
-
-### **LinkedIn Caption Example**
-
-> **Caption**:  
-> 
-> “Just finished building a **highly secure, auto-scaling Azure infrastructure** with Terraform! It features a **private AKS cluster**, locked-down NSGs, Bastion host, and an Azure Container Registry for seamless deployments. Check out the code & details on my GitHub if you’d like to learn how to create a minimal yet secure environment in Azure.  
-> #Azure #Terraform #DevOps #CloudSecurity #AKS #InfrastructureAsCode”
-
----
-
-Feel free to edit any lines or mention your own GitHub repository link and project name. Good luck and happy Terraforming!
-
