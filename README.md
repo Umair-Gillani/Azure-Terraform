@@ -31,9 +31,3 @@
 ```
 
 
-## Outputs
-After deployment, the following outputs will be available:
-- Resource Group Name
-- AKS Cluster Name
-- ACR Name
-- Public IP of Bastion Host
